@@ -47,7 +47,7 @@ public class ResourceController {
         return service.get(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/save")
     public ResponseEntity<?> create(@RequestBody ResourceEntity r) {
         return ResponseEntity.ok(service.create(r));
     }
