@@ -9,7 +9,7 @@ import java.time.Instant;
 public class ReservationDto {
     private Long id;
     private Long resourceId;
-    // userId will be ignored for USER role; derived from JWT
+
     private Long userId;
     private String status; // PENDING, CONFIRMED, CANCELLED
     private BigDecimal price;

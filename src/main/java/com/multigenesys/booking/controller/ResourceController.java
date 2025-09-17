@@ -1,8 +1,11 @@
 package com.multigenesys.booking.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,43 +26,71 @@ import lombok.var;
 @RestController
 @RequestMapping("/resources")
 public class ResourceController {
-    private final ResourceService service;
-    public ResourceController(ResourceService service) { this.service = service; }
+	private final ResourceService service;
 
-    @GetMapping
-    public ResponseEntity<?> list(@RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(defaultValue = "20") int size,
-                                  @RequestParam(defaultValue = "id,asc") String sort) {
-        var parts = sort.split(",");
-        Sort s = Sort.by(Sort.Direction.fromString(parts.length>1?parts[1]:"asc"), parts[0]);
-        Page<ResourceEntity> p = service.list(page, size, s);
-        var dtoPage = p.map(r -> {
-            ResourceDto d = new ResourceDto();
-            d.setId(r.getId()); d.setName(r.getName()); d.setType(r.getType());
-            d.setDescription(r.getDescription()); d.setCapacity(r.getCapacity()); d.setActive(r.isActive());
-            return d;
-        });
-        return ResponseEntity.ok(dtoPage);
-    }
+	public ResourceController(ResourceService service) {
+		this.service = service;
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> get(@PathVariable Long id) {
-        return service.get(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-    }
+	@GetMapping
+	public ResponseEntity<?> list(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "id,asc") String sort) {
+		var parts = sort.split(",");
+		Sort s = Sort.by(Sort.Direction.fromString(parts.length > 1 ? parts[1] : "asc"), parts[0]);
+		Page<ResourceEntity> p = service.list(page, size, s);
+		var dtoPage = p.map(r -> {
+			ResourceDto d = new ResourceDto();
+			d.setId(r.getId());
+			d.setName(r.getName());
+			d.setType(r.getType());
+			d.setDescription(r.getDescription());
+			d.setCapacity(r.getCapacity());
+			d.setActive(r.isActive());
+			return d;
+		});
+		return ResponseEntity.ok(dtoPage);
+	}
 
-    @PostMapping("/save")
-    public ResponseEntity<?> create(@RequestBody ResourceEntity r) {
-        return ResponseEntity.ok(service.create(r));
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<?> get(@PathVariable Long id) {
+		return service.get(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+	}
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody ResourceEntity r) {
-        return ResponseEntity.ok(service.update(id,r));
-    }
+	@PostMapping("/save")
+	public ResponseEntity<?> create(@RequestBody ResourceEntity r) {
+		return ResponseEntity.ok(service.create(r));
+	}
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
+	@PutMapping("/{id}")
+	public ResponseEntity<Map<String, String>> update(
+	        @PathVariable Long id,
+	        @RequestBody ResourceEntity updatedResource) {
+	    
+	    Map<String, String> response = new HashMap<>();
+
+	    if (!service.existsById(id)) {
+	        response.put("message", "Resource with id " + id + " not found");
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	    }
+
+	    service.update(id, updatedResource);
+	    response.put("message", "Resource updated successfully");
+	    return ResponseEntity.ok(response);
+	}
+
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+		Map<String, String> response = new HashMap<>();
+
+		if (!service.existsById(id)) {
+			response.put("message", "Resource with id " + id + " not found");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+
+		service.delete(id);
+		response.put("message", "Resource deleted successfully");
+		return ResponseEntity.ok(response);
+	}
+
 }

@@ -38,4 +38,3 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token, "Bearer", 3600_000L));
     }
 }
-

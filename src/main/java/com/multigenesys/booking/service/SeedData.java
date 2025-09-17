@@ -32,6 +32,14 @@ public class SeedData {
 				u.setEnabled(true);
 				userRepository.save(u);
 			}
+			if (!userRepository.existsByUsername("user2")) {
+				User u = new User();
+				u.setUsername("user2");
+				u.setPassword(encoder.encode("user222"));
+				u.setRoles(Set.of(Role.ROLE_USER));
+				u.setEnabled(true);
+				userRepository.save(u);
+			}
 		};
 	}
 }
